@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Gmail Helper</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>Gmail Helper</h1>
+        <p>HTML editor, preview, and templates for Gmail.</p>
+      </header>
+
+      <section class="card">
+        <h2>Quick start</h2>
+        <ol>
+          <li>Open <a href="https://mail.google.com/" target="_blank" rel="noreferrer">Gmail</a> and start a new compose.</li>
+          <li>Click the <strong>HTML</strong> button in the compose toolbar.</li>
+          <li>Paste HTML, preview it, save a template, then insert.</li>
+        </ol>
+        <button id="open-editor" type="button">Open editor in Gmail</button>
+        <p id="status" class="status" aria-live="polite"></p>
+      </section>
+
+      <section class="card">
+        <div class="row">
+          <h2>Saved templates</h2>
+          <span id="count">0</span>
+        </div>
+        <ul id="templates"></ul>
+        <p id="empty" class="empty">No templates yet. Save one from the editor.</p>
+      </section>
+    </main>
+    <script src="popup.js"></script>
+  </body>
+</html>

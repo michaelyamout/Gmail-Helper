@@ -1,0 +1,151 @@
+:root {
+  color-scheme: light;
+  --bg: #f6f7f9;
+  --card: #ffffff;
+  --text: #202124;
+  --muted: #5f6368;
+  --line: #e8eaed;
+  --accent: #1a73e8;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  width: 320px;
+  font: 13px/1.45 "Segoe UI", system-ui, sans-serif;
+  color: var(--text);
+  background: var(--bg);
+}
+
+main {
+  padding: 14px;
+  display: grid;
+  gap: 12px;
+}
+
+header h1 {
+  margin: 0 0 4px;
+  font-size: 16px;
+}
+
+header p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.card h2 {
+  margin: 0 0 8px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+#count {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+ol {
+  margin: 0 0 12px;
+  padding-left: 18px;
+  color: var(--text);
+}
+
+ol li + li {
+  margin-top: 4px;
+}
+
+a {
+  color: var(--accent);
+}
+
+button {
+  width: 100%;
+  height: 34px;
+  border: none;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #1765cc;
+}
+
+.status {
+  min-height: 16px;
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.status.error {
+  color: #d93025;
+}
+
+ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+li {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 10px;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+li span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+li button {
+  width: auto;
+  height: 26px;
+  padding: 0 8px;
+  background: #fff;
+  color: #3c4043;
+  border: 1px solid var(--line);
+  font-size: 11px;
+}
+
+li button:hover {
+  background: #f8f9fa;
+}
+
+.empty {
+  margin: 0;
+  color: var(--muted);
+}
+
+.empty.hidden,
+ul:not(:empty) + .empty {
+  display: none;
+}
