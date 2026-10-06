@@ -8,3 +8,4 @@ dist/
 *.zip
 .env
 .env.*
+imported-from-html2email/

@@ -235,6 +235,85 @@
     setStatus(`Deleted “${template.name}”.`);
   }
 
+  function normalizeImportedTemplates(payload) {
+    if (Array.isArray(payload)) return payload;
+    if (payload && Array.isArray(payload.templates)) return payload.templates;
+    if (payload && typeof payload === "object") {
+      // Html2Email shape: { [id]: { name, html, ... } }
+      const values = Object.values(payload);
+      if (values.length && values.every((v) => v && typeof v === "object" && (v.html || v.content || v.body))) {
+        return values;
+      }
+    }
+    return [];
+  }
+
+  async function importTemplatesFromJson(text) {
+    let payload;
+    try {
+      payload = JSON.parse(text);
+    } catch {
+      throw new Error("Invalid JSON file.");
+    }
+
+    const incoming = normalizeImportedTemplates(payload)
+      .map((item, index) => {
+        const name = String(item.name || item.title || `Imported ${index + 1}`).trim();
+        const html = String(item.html || item.content || item.body || "");
+        if (!name || !html.trim()) return null;
+        return {
+          id: item.id || uid(),
+          name,
+          html,
+          updatedAt: item.updatedAt || item.modifiedAt || Date.now(),
+          createdAt: item.createdAt || Date.now(),
+        };
+      })
+      .filter(Boolean);
+
+    if (!incoming.length) {
+      throw new Error("No templates found in that JSON file.");
+    }
+
+    const existing = await getTemplates();
+    const byName = new Map(existing.map((t) => [t.name.toLowerCase(), t]));
+    let added = 0;
+    let updated = 0;
+
+    for (const item of incoming) {
+      const prev = byName.get(item.name.toLowerCase());
+      if (prev) {
+        prev.html = item.html;
+        prev.updatedAt = Date.now();
+        updated += 1;
+      } else {
+        existing.push(item);
+        byName.set(item.name.toLowerCase(), item);
+        added += 1;
+      }
+    }
+
+    await setTemplates(existing);
+    await refreshTemplates();
+    return { added, updated, total: incoming.length };
+  }
+
+  async function exportTemplatesJson() {
+    const templates = await getTemplates();
+    if (!templates.length) {
+      setStatus("No templates to export.", true);
+      return;
+    }
+    const blob = new Blob([JSON.stringify({ templates }, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `gmail-helper-templates-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    setStatus(`Exported ${templates.length} template(s).`);
+  }
+
   function insertHtmlIntoCompose(rawHtml) {
     const body = findActiveComposeBody();
     if (!body) {
@@ -316,6 +395,8 @@
             <h1>Gmail Helper</h1>
             <div class="gh-helper-header-actions">
               <button type="button" class="gh-helper-btn-ghost" data-upload>Upload .html</button>
+              <button type="button" class="gh-helper-btn-ghost" data-import>Import JSON</button>
+              <button type="button" class="gh-helper-btn-ghost" data-export>Export JSON</button>
               <button type="button" class="gh-helper-icon-btn" data-close aria-label="Close">×</button>
             </div>
           </div>
@@ -347,6 +428,7 @@
             </div>
           </div>
           <input class="gh-helper-file-input" data-file type="file" accept=".html,.htm,text/html" />
+          <input class="gh-helper-file-input" data-import-file type="file" accept=".json,application/json" />
         </div>
       </div>
     `;
@@ -375,6 +457,10 @@
     root.querySelector("[data-upload]").addEventListener("click", () => {
       root.querySelector("[data-file]").click();
     });
+    root.querySelector("[data-export]").addEventListener("click", exportTemplatesJson);
+    root.querySelector("[data-import]").addEventListener("click", () => {
+      root.querySelector("[data-import-file]").click();
+    });
     root.querySelector("[data-file]").addEventListener("change", async (event) => {
       const file = event.target.files?.[0];
       if (!file) return;
@@ -385,6 +471,17 @@
       await setDraft(text);
       updatePreview();
       setStatus(`Loaded ${file.name}`);
+      event.target.value = "";
+    });
+    root.querySelector("[data-import-file]").addEventListener("change", async (event) => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      try {
+        const result = await importTemplatesFromJson(await file.text());
+        setStatus(`Imported ${result.total}: ${result.added} new, ${result.updated} updated.`);
+      } catch (error) {
+        setStatus(error.message || "Import failed.", true);
+      }
       event.target.value = "";
     });
 
